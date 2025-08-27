@@ -193,10 +193,11 @@ const VirtualGallery: React.FC = () => {
     
     const floorMaterial = new THREE.MeshPhysicalMaterial({
       map: woodTexture,
-      roughness: 0.3,
-      metalness: 0.05,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.1
+      roughness: 0.6,
+      metalness: 0.02,
+      clearcoat: 0.4,
+      clearcoatRoughness: 0.4,
+      reflectivity: 0.3
     });
     
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
