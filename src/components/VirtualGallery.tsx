@@ -98,6 +98,102 @@ const VirtualGallery: React.FC = () => {
     }
   ];
 
+  // 创建艺术抽象花纹纹理
+  const createDelicatePatternTexture = (width: number, height: number) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d')!;
+    
+    // 黑色背景
+    context.fillStyle = '#000000';
+    context.fillRect(0, 0, width, height);
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 绘制流畅的抽象花卉图案
+    context.strokeStyle = '#ffffff';
+    context.lineWidth = 3.0;
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    
+    // 创建多个花朵中心点
+    const flowerCenters = [
+      { x: centerX - 150, y: centerY - 100 },
+      { x: centerX + 120, y: centerY - 80 },
+      { x: centerX - 80, y: centerY + 120 },
+      { x: centerX + 180, y: centerY + 150 },
+      { x: centerX, y: centerY }
+    ];
+    
+    flowerCenters.forEach((center, index) => {
+      // 绘制花瓣 - 使用贝塞尔曲线创建自然流畅的形状
+      const petalCount = 6 + (index % 3);
+      const petalSize = 40 + (index * 10);
+      
+      for (let i = 0; i < petalCount; i++) {
+        const angle = (Math.PI * 2 / petalCount) * i;
+        const petalAngle = angle + (Math.sin(index) * 0.3); // 添加自然变化
+        
+        context.beginPath();
+        context.moveTo(center.x, center.y);
+        
+        // 创建花瓣的贝塞尔曲线
+        const cp1x = center.x + Math.cos(petalAngle - 0.5) * (petalSize * 0.6);
+        const cp1y = center.y + Math.sin(petalAngle - 0.5) * (petalSize * 0.6);
+        const cp2x = center.x + Math.cos(petalAngle + 0.5) * (petalSize * 0.6);
+        const cp2y = center.y + Math.sin(petalAngle + 0.5) * (petalSize * 0.6);
+        const endx = center.x + Math.cos(petalAngle) * petalSize;
+        const endy = center.y + Math.sin(petalAngle) * petalSize;
+        
+        context.quadraticCurveTo(cp1x, cp1y, endx, endy);
+        context.quadraticCurveTo(cp2x, cp2y, center.x, center.y);
+        context.stroke();
+      }
+    });
+    
+    // 绘制连接花朵的流畅藤蔓线条
+    context.strokeStyle = '#e0e0e0';
+    context.lineWidth = 2.0;
+    
+    for (let i = 0; i < flowerCenters.length - 1; i++) {
+      const start = flowerCenters[i];
+      const end = flowerCenters[i + 1];
+      
+      context.beginPath();
+      context.moveTo(start.x, start.y);
+      
+      // 创建S形曲线连接
+      const midX = (start.x + end.x) / 2 + (Math.sin(i) * 50);
+      const midY = (start.y + end.y) / 2 + (Math.cos(i) * 30);
+      
+      context.quadraticCurveTo(midX, midY, end.x, end.y);
+      context.stroke();
+    }
+    
+    // 添加装饰性的抽象线条
+    context.strokeStyle = '#cccccc';
+    context.lineWidth = 1.5;
+    
+    for (let i = 0; i < 8; i++) {
+      context.beginPath();
+      const startX = Math.random() * width;
+      const startY = Math.random() * height;
+      
+      // 创建波浪形装饰线
+      context.moveTo(startX, startY);
+      for (let j = 0; j < 5; j++) {
+        const x = startX + (j * 60) + (Math.sin(j + i) * 20);
+        const y = startY + (Math.cos(j + i) * 15);
+        context.lineTo(x, y);
+      }
+      context.stroke();
+    }
+    
+    return new THREE.CanvasTexture(canvas);
+  };
+
   // 创建深色木纹地板纹理
   const createDarkWoodFloorTexture = (width: number, height: number) => {
     const canvas = document.createElement('canvas');
@@ -205,12 +301,17 @@ const VirtualGallery: React.FC = () => {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // 创建黑色天花板
+    // 创建带精细花纹的黑色天花板
     const ceilingGeometry = new THREE.PlaneGeometry(20, 20);
+    const ceilingPatternTexture = createDelicatePatternTexture(1024, 1024);
+    ceilingPatternTexture.wrapS = ceilingPatternTexture.wrapT = THREE.ClampToEdgeWrapping;
+    ceilingPatternTexture.repeat.set(1, 1);
+    
     const ceilingMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0x000000,
+      map: ceilingPatternTexture,
       roughness: 0.9,
-      metalness: 0.1
+      metalness: 0.1,
+      transparent: false
     });
     const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
     ceiling.rotation.x = Math.PI / 2;
